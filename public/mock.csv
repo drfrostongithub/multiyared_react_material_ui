@@ -1,0 +1,28 @@
+Kode Acc,Nama Acc,Ccy,Group Name,Acc Type,Level,Dept,Gain loss,Control Acc,Parent Acc
+1,Aset,-,1,G,1,,,,,
+11,Aset Lancar,-,1,G,2,,,,1
+111,Aset Lancar,-,1,G,2,,,,11
+111.01,Kas & Bank,-,1,G,3,,,,111
+111.01.001,Kas di tangan IDR,IDR,1,D,5,,,1,111.01
+111.01.002,Kas di tangan USD,USD,1,D,5,,true,1,111.01
+111.02,Bank,IDR,1,D,5,,,,111.01
+111.02.001,Bank BCA IDR,IDR,1,D,5,,,2,111.01
+111.02.002,Bank Mandiri USD,USD,1,D,5,,,2,111.01
+111.02.003,Bank Mandiri IDR,IDR,1,D,5,true,,,111
+111.03,Piutang Kantor,IDR,1,D,5,,,3,111
+111.03.001,Piutang Usaha IDR,IDR,1,D,5,true,,3,111.03
+111.03.002,Piutang Karyawan,IDR,1,D,5,,,3,111.03
+111.03.003,Piutang lain-lain,IDR,1,D,5,,,3,111.03
+2,Kewajiban,-,2,G,1,,,,,
+21,Kewajiban Jangka Pendek,-,2,G,2,,,,,2
+211,Hutang Bank Jk Pendek,-,2,G,3,,,,,21
+211.01,Bank Danamon,IDR,2,D,5,,,4,211
+211.01.001,Danamon SGD,SGD,2,D,5,true,true,4,211.01
+211.02,Mandiri IDR,IDR,2,D,5,,,4,211.02
+3,Modal,-,3,G,1,,,,,
+31,Modal Mr. X,IDR,3,D,3,,,1,3
+31.02,Modal Mr. Y,IDR,3,D,3,,,1,31
+41,Pendapatan Usaha,-,4,G,2,,,,,4
+41.01,Pendapatan Usaha Proyek,-,4,G,3,,,,,41
+41.01.001,Pendapatan Proyek Sipil IDR,IDR,4,D,4,,false,,41.01
+41.01.002,Pendapatan IDR,IDR,4,D,4,true,true,,41.01
