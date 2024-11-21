@@ -1,6 +1,7 @@
 import { Paper } from "@mui/material";
 // import { tableCellClasses } from "@mui/material/TableCell";
 import { DataGrid } from "@mui/x-data-grid";
+import { useState } from "react";
 
 const formatValue = (value, map) => {
   return map[value] || value; // If value is not found in the map, return the original value
@@ -25,9 +26,10 @@ const controlAccMap = {
   5: "Fixed Asset",
 };
 
-const paginationModel = { page: 0, pageSize: 5 };
+const paginationModel = { page: 0, pageSize: 10 };
 
 const DataTableColumns = ({ data, handleOpenDialog, handleDelete }) => {
+  const [isActionsShown, setIsActionsShown] = useState({});
   const columns = [
     { field: "Kode Acc", headerName: "Kode Acc", minWidth: 170 },
     { field: "Nama Acc", headerName: "Nama Acc", minWidth: 170 },
@@ -35,7 +37,7 @@ const DataTableColumns = ({ data, handleOpenDialog, handleDelete }) => {
       field: "Acc Type",
       headerName: "Acc Type",
       minWidth: 170,
-      valueGetter: (value) => (value === 1 ? "G" : "D"),
+      valueGetter: (value) => value,
     },
     {
       field: "Level",
@@ -70,24 +72,59 @@ const DataTableColumns = ({ data, handleOpenDialog, handleDelete }) => {
     },
     {
       field: "action",
-      headerName: "Actions",
+      headerName: "",
       minWidth: 170,
       renderCell: (params) => (
-        <ActionButton
-          row={params.row}
-          handleOpenDialog={handleOpenDialog}
-          handleDelete={handleDelete}
-        />
+        <div>
+          <button
+            onClick={() =>
+              setIsActionsShown({
+                ...isActionsShown,
+                [params.row.id]: !isActionsShown[params.row.id],
+              })
+            }
+          >
+            {isActionsShown[params.row.id] ? "Hide" : "Actions"}
+          </button>
+          {isActionsShown[params.row.id] && ( // Conditionally render actions based on toggle state
+            <>
+              <button
+                onClick={() => {
+                  handleOpenDialog("edit", params.row);
+                  // Hide actions after editing
+                  setIsActionsShown({
+                    ...isActionsShown,
+                    [params.row.id]: false,
+                  });
+                }}
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => {
+                  handleDelete(params.row);
+                  // Hide actions after deleting
+                  setIsActionsShown({
+                    ...isActionsShown,
+                    [params.row.id]: false,
+                  });
+                }}
+              >
+                Delete
+              </button>
+            </>
+          )}
+        </div>
       ),
     },
   ];
 
-  const ActionButton = ({ row, handleOpenDialog, handleDelete }) => (
-    <>
-      <button onClick={() => handleOpenDialog("edit", row)}>Edit</button>
-      <button onClick={() => handleDelete(row)}>Delete</button>
-    </>
-  );
+  // const ActionButton = ({ row, handleOpenDialog, handleDelete }) => (
+  //   <>
+  //     <button onClick={() => handleOpenDialog("edit", row)}>Edit</button>
+  //     <button onClick={() => handleDelete(row)}>Delete</button>
+  //   </>
+  // );
 
   const dataWithAction = data.map((row, index) => {
     // Use index or a combination of properties for a unique id
@@ -106,7 +143,7 @@ const DataTableColumns = ({ data, handleOpenDialog, handleDelete }) => {
           rows={dataWithAction}
           columns={columns}
           initialState={{ pagination: { paginationModel } }}
-          pageSizeOptions={[5, 15, 25]}
+          pageSizeOptions={[10, 15, 25]}
           sx={{ border: 0 }}
         />
       </Paper>

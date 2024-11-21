@@ -11,6 +11,8 @@ import {
   Select,
   MenuItem,
   FormControlLabel,
+  FormGroup,
+  FormHelperText,
   InputLabel,
   FormControl,
   Checkbox,
@@ -21,7 +23,7 @@ import Draggable from "react-draggable";
 import EditIcon from "@mui/icons-material/Edit";
 // import DialogEditCurrency from "./dialogEditCurrency";
 import CurrencyTable from "../page/CurrencyTable";
-import { validateAccountForm } from "./validation";
+import { currenciesList, validateAccountForm } from "./validation";
 
 function PaperComponent(props) {
   return (
@@ -72,20 +74,41 @@ const DialogEditAccount = ({
     "Kode Acc": "",
     "Nama Acc": "",
     "Acc Type": "",
+    Ccy: "",
+    "Group Name": "",
+    Level: "",
+    Dept: false,
+    "Gain loss": false,
+    "Control Acc": "",
+    "Parent Acc": "",
   });
   useEffect(() => {
     if (initialMode === "edit" && initialRowData) {
       setFormData(initialRowData);
     } else {
       formCleaning();
-      setErrors({ "Kode Acc": "", "Nama Acc": "", "Acc Type": "" });
+      errorCleaning();
     }
   }, [initialMode, initialRowData]);
 
   const handleSubmit = () => {
-    const { errors, hasErrors } = validateAccountForm(formData, data);
-    setErrors(errors);
+    const { errors } = validateAccountForm(formData, data, initialMode);
+    let hasErrors = false; // Declare hasErrors as let to allow reassignment
 
+    if (formData["Gain loss"] && formData["Ccy"]) {
+      const selectedCurrency = currencies.find(
+        (curr) => curr.code === formData["Ccy"]
+      );
+      if (selectedCurrency && selectedCurrency.std) {
+        errors["Gain loss"] =
+          "Gain loss cannot be checked for standard currencies.";
+        hasErrors = true;
+      } else {
+        errors["Gain loss"] = "";
+      }
+    }
+
+    setErrors(errors);
     if (!hasErrors) {
       onSubmit(formData);
       formCleaning();
@@ -109,14 +132,31 @@ const DialogEditAccount = ({
 
   const submitCurrencyEdit = (statusEditCurrency, currencyData) => {
     if (statusEditCurrency === "create") {
-      setCurrency([...currencies, currencyData]);
+      // Set all existing currencies to not be standard
+      const updatedCurrencies = currencies.map((currency) => ({
+        ...currency,
+        std: false,
+      }));
+
+      // Add the new currency with the std property from currencyData
+      setCurrency([...updatedCurrencies, currencyData]);
     } else if (statusEditCurrency === "edit") {
       const rowIndex = currencies.findIndex(
         (item) => item === selectedRowCurrencies
       );
+
       if (rowIndex !== -1) {
         const updatedData = [...currencies];
-        updatedData[rowIndex] = currencyData;
+
+        // Set all currencies to not be standard
+        updatedData.forEach((item) => (item.std = false));
+
+        // Update the edited currency with the new std value
+        updatedData[rowIndex] = {
+          ...currencyData,
+          std: currencyData.std, // Set the std property based on the edited currency data
+        };
+
         setCurrency(updatedData);
       }
     }
@@ -144,6 +184,9 @@ const DialogEditAccount = ({
     });
   };
 
+  const errorCleaning = () => {
+    setErrors({ "Kode Acc": "", "Nama Acc": "", "Acc Type": "" });
+  };
   // Edit Currency
   const handleOpenEditCurrency = (statusEditCurrency, row) => {
     setStatusEditCurrency(statusEditCurrency);
@@ -152,8 +195,36 @@ const DialogEditAccount = ({
   };
 
   const handleCloseEditCurrency = () => {
+    errorCleaning();
     setOpenEditCurrency(false);
   };
+
+  // const handleAccTypeChange = (event) => {
+  //   const newAccType = event.target.value;
+  //   setFormData({
+  //     ...formData,
+  //     "Acc Type": newAccType,
+  //     Level: newAccType === "G" ? 1 : formData.Level, // Set Level to 1 if Acc Type is 'G'
+  //   });
+
+  //   // Disable/Enable fields based on Acc Type
+  //   const isGeneralAccType = newAccType === "G";
+  //   const disabledFields = {
+  //     Level: isGeneralAccType,
+  //     "Parent Acc": isGeneralAccType,
+  //     "Control Acc": isGeneralAccType,
+  //     Ccy: isGeneralAccType,
+  //     Dept: isGeneralAccType,
+  //     "Gain loss": isGeneralAccType,
+  //   };
+
+  //   // Update form data with disabled fields
+  //   setFormData((prevFormData) => ({
+  //     ...prevFormData,
+  //     ...disabledFields,
+  //   }));
+  // };
+
   return (
     <>
       <Dialog
@@ -212,7 +283,16 @@ const DialogEditAccount = ({
                 required
                 value={formData["Acc Type"] || ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, ["Acc Type"]: e.target.value })
+                  setFormData({
+                    ...formData,
+                    ["Acc Type"]: e.target.value,
+                    Level: 1,
+                    ["Parent Acc"]: "",
+                    ["Control Acc"]: "",
+                    Ccy: "",
+                    Dept: "",
+                    ["Gain loss"]: "",
+                  })
                 }
                 label='Acc Type'
                 sx={{ width: 200 }}
@@ -230,12 +310,18 @@ const DialogEditAccount = ({
             <div>
               <InputLabel id='demo-simple-select-label'>Level</InputLabel>
               <Select
-                value={formData.Level || ""}
+                value={formData["Acc Type"] === "G" ? 1 : formData.Level || ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, Level: e.target.value })
+                  setFormData({
+                    ...formData,
+                    Level: e.target.value,
+                    ["Parent Acc"]: parseFloat(e.target.value - 1),
+                    ["Group Name"]: parseFloat(e.target.value - 1),
+                  })
                 }
                 label='Level'
                 sx={{ width: 200 }}
+                disabled={formData["Acc Type"] === "G"}
               >
                 {Array.from({ length: 9 }, (_, i) => i + 1).map((level) => (
                   <MenuItem key={level} value={level}>
@@ -253,12 +339,17 @@ const DialogEditAccount = ({
             label='Parent Acc'
             type='text'
             variant='standard'
-            value={formData["Parent Acc"] || ""}
+            value={
+              formData["Level"] > 1
+                ? parseFloat(formData.Level - 1)
+                : formData["Parent Acc"] || ""
+            }
             onChange={(e) =>
               setFormData({ ...formData, ["Parent Acc"]: e.target.value })
             }
-            // error={!!currencyData.codeError} // Assuming you have an error state for code
-            // helperText={currencyData.codeError} // Assuming you have an error message for code
+            disabled={formData["Acc Type"] === "G"}
+            error={!!errors["Parent Acc"]}
+            helperText={errors["Parent Acc"]}
           />
           <InputLabel id='demo-simple-select-label'>Acc Group</InputLabel>
           <Select
@@ -270,6 +361,7 @@ const DialogEditAccount = ({
             onChange={(e) =>
               setFormData({ ...formData, "Group Name": e.target.value })
             }
+            disabled={formData["Level"] > 1}
           >
             <MenuItem value={1}>Asset</MenuItem>
             <MenuItem value={2}>Liabilitas</MenuItem>
@@ -293,6 +385,7 @@ const DialogEditAccount = ({
                 onChange={(e) =>
                   setFormData({ ...formData, "Control Acc": e.target.value })
                 }
+                disabled={formData["Acc Type"] === "G"}
               >
                 <MenuItem value={1}>None</MenuItem>
                 <MenuItem value={2}>Cash/Bank</MenuItem>
@@ -311,6 +404,7 @@ const DialogEditAccount = ({
                 onChange={(e) =>
                   setFormData({ ...formData, Ccy: e.target.value })
                 }
+                disabled={formData["Acc Type"] === "G"}
               >
                 {currencies.map((option) => (
                   <MenuItem key={option.code} value={option.code}>
@@ -320,44 +414,60 @@ const DialogEditAccount = ({
               </Select>
             </FormControl>
           </div>
-          <div style={{ display: "flex" }}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={formData.Dept}
-                  onChange={(e) =>
-                    setFormData({ ...formData, Dept: e.target.checked })
-                  }
-                />
-              }
-              label='Department'
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={formData["Gain loss"]}
-                  onChange={(e) =>
-                    setFormData({ ...formData, "Gain loss": e.target.checked })
-                  }
-                />
-              }
-              label='Gain loss'
-            />
-            <Button
-              variant='contained'
-              disableRipple
-              onClick={handleOpenTableCurrency}
-              startIcon={<EditIcon />}
-            >
-              Edit Currency
-            </Button>
-          </div>
+          <FormControl
+            style={{ display: "flex" }}
+            error={!!errors["Gain loss"]}
+            helperText={errors["Gain loss"]}
+            required
+            component='fieldset'
+            sx={{ m: 3 }}
+            variant='standard'
+          >
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={formData.Dept}
+                    onChange={(e) =>
+                      setFormData({ ...formData, Dept: e.target.checked })
+                    }
+                    disabled={formData["Acc Type"] === "G"}
+                  />
+                }
+                label='Department'
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={formData["Gain loss"]}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        "Gain loss": e.target.checked,
+                      })
+                    }
+                    disabled={formData["Acc Type"] === "G"}
+                  />
+                }
+                label='Gain loss'
+              />
+            </FormGroup>
+            <FormHelperText>{errors["Gain loss"]}</FormHelperText>
+          </FormControl>
         </DialogContent>
-        <DialogActions style={{ justifyContent: "flex-start" }}>
+        <DialogActions style={{ justifyContent: "space-around" }}>
           <Button onClick={handleSubmit}>
             {dialogMode === "create" ? "Buat" : "Simpan"}
           </Button>
           <Button onClick={closeWhileCleaning}>Batal</Button>
+          <Button
+            variant='contained'
+            disableRipple
+            onClick={handleOpenTableCurrency}
+            startIcon={<EditIcon />}
+          >
+            Edit Currency
+          </Button>
         </DialogActions>
         <CurrencyTable
           dialogOpenTableCurrency={dialogOpenTableCurrency} // false

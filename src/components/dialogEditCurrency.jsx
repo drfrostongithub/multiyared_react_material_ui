@@ -4,9 +4,13 @@ import {
   Modal,
   TextField,
   FormControlLabel,
+  FormControl,
+  FormHelperText,
+  FormGroup,
   Checkbox,
   Box,
 } from "@mui/material";
+import { validateAccountForm } from "./validation";
 
 const style = {
   position: "absolute",
@@ -27,7 +31,7 @@ const DialogEditCurrency = ({
   handleCloseEditCurrency,
   submitCurrencyEdit,
   singularCurrency: initialCurrencyData,
-  statusEditCurrency: initiatlStatusCurrency,
+  statusEditCurrency: initialStatusCurrency,
 }) => {
   const [formData, setFormData] = useState({
     code: "",
@@ -43,12 +47,12 @@ const DialogEditCurrency = ({
   });
 
   useEffect(() => {
-    if (initiatlStatusCurrency === "edit" && initialCurrencyData) {
+    if (initialStatusCurrency === "edit" && initialCurrencyData) {
       setFormData(initialCurrencyData);
     } else {
       formCleaning();
     }
-  }, [initialCurrencyData, initiatlStatusCurrency]);
+  }, [initialCurrencyData, initialStatusCurrency]);
 
   const formCleaning = () => {
     setFormData({
@@ -59,22 +63,17 @@ const DialogEditCurrency = ({
     });
   };
 
-  const handleSubmit = (initiatlStatusCurrency, formData) => {
-    const newErrors = Object.assign({}, errors); // Create a copy to avoid mutation
-    let hasErrors = false;
-    ["code", "name", "rate"].forEach((field) => {
-      if (!formData[field]) {
-        newErrors[field] = "This field is required.";
-        hasErrors = true;
-      } else {
-        newErrors[field] = "";
-      }
-    });
+  const handleSubmit = (initialStatusCurrency, formData) => {
+    const { errors, hasErrors } = validateAccountForm(
+      formData,
+      null,
+      initialStatusCurrency
+    );
 
-    setErrors(newErrors);
+    setErrors(errors);
 
     if (!hasErrors) {
-      submitCurrencyEdit(initiatlStatusCurrency, formData);
+      submitCurrencyEdit(initialStatusCurrency, formData);
     }
   };
 
@@ -87,9 +86,7 @@ const DialogEditCurrency = ({
         aria-describedby='child-modal-description'
       >
         <Box sx={{ ...style, width: 200 }}>
-          <h3>
-            {initiatlStatusCurrency ? "Create Currency" : "Edit Currency"}
-          </h3>
+          <h3>{initialStatusCurrency ? "Create Currency" : "Edit Currency"}</h3>
           <TextField
             autoFocus
             required
@@ -127,22 +124,35 @@ const DialogEditCurrency = ({
             error={!!errors["rate"]}
             helperText={errors["rate"]}
           />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={formData.std}
-                onChange={(e) =>
-                  setFormData({ ...formData, std: e.target.checked })
+          <FormControl
+            style={{ display: "flex" }}
+            error={!!errors["std"]}
+            helperText={errors["std"]}
+            required
+            component='fieldset'
+            sx={{ m: 3 }}
+            variant='standard'
+          >
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={formData.std}
+                    onChange={(e) =>
+                      setFormData({ ...formData, std: e.target.checked })
+                    }
+                    error={!!errors["std"]}
+                    helperText={errors["std"]}
+                  />
                 }
+                label='Standard Currency'
                 error={!!errors["std"]}
                 helperText={errors["std"]}
               />
-            }
-            label='Standard Currency'
-            error={!!errors["std"]}
-            helperText={errors["std"]}
-          />
-          <div
+            </FormGroup>
+            <FormHelperText>{errors["std"]}</FormHelperText>
+          </FormControl>
+          <FormControl
             style={{
               display: "flex",
               justifyContent: "flex-end",
@@ -152,7 +162,7 @@ const DialogEditCurrency = ({
             <Button
               variant='contained'
               color='primary'
-              onClick={() => handleSubmit(initiatlStatusCurrency, formData)}
+              onClick={() => handleSubmit(initialStatusCurrency, formData)}
             >
               Save
             </Button>
@@ -162,7 +172,7 @@ const DialogEditCurrency = ({
             >
               Cancel
             </Button>
-          </div>
+          </FormControl>
         </Box>
       </Modal>
     </>
