@@ -38,29 +38,19 @@ export const validateAccountForm = (formData, data, initialMode) => {
         "Parent Acc is required for levels greater than 1.";
       hasErrors = true;
     } else if (
-      formData["Parent Acc"] !== parseFloat(formData.Level - 1) &&
+      parseFloat(formData["Parent Acc"]) !== parseFloat(formData.Level - 1) &&
       formData["Acc Type"] !== "G" &&
       formData.Level !== 1
     ) {
+      console.log(formData["Acc Type"], formData["Parent Acc"]);
+      console.log(formData.Level - 1, formData.Level);
+
       newErrors["Parent Acc"] =
         "Parent Acc must be equal to General (0) or Level - 1.";
       hasErrors = true;
     } else {
       newErrors["Parent Acc"] = "";
     }
-
-    // if (formData["Gain loss"] && formData["Ccy"]) {
-    //   const selectedCurrency = currenciesList.find(
-    //     (curr) => curr.code === formData["Ccy"]
-    //   );
-    //   if (selectedCurrency && selectedCurrency.std) {
-    //     newErrors["Gain loss"] =
-    //       "Gain loss cannot be checked for standard currenciesList.";
-    //     hasErrors = true;
-    //   }
-    // } else {
-    //   newErrors["Gain loss"] = "";
-    // }
   }
 
   ["code", "name", "rate"].forEach((field) => {

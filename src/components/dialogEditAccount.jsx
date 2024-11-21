@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import {
+  Alert,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -23,7 +24,7 @@ import Draggable from "react-draggable";
 import EditIcon from "@mui/icons-material/Edit";
 // import DialogEditCurrency from "./dialogEditCurrency";
 import CurrencyTable from "../page/CurrencyTable";
-import { currenciesList, validateAccountForm } from "./validation";
+import { validateAccountForm } from "./validation";
 
 function PaperComponent(props) {
   return (
@@ -165,6 +166,13 @@ const DialogEditAccount = ({
   };
 
   const deleteCurrency = (currencyCode) => {
+    if (currencies.length === 1) {
+      <Alert severity='error'>
+        Cannot delete the last remaining currency.
+      </Alert>;
+      return; // Exit the function without deleting
+    }
+
     const newData = currencies.filter((item) => item.code !== currencyCode);
     setCurrency(newData);
   };
@@ -339,11 +347,7 @@ const DialogEditAccount = ({
             label='Parent Acc'
             type='text'
             variant='standard'
-            value={
-              formData["Level"] > 1
-                ? parseFloat(formData.Level - 1)
-                : formData["Parent Acc"] || ""
-            }
+            value={formData["Parent Acc"] || ""}
             onChange={(e) =>
               setFormData({ ...formData, ["Parent Acc"]: e.target.value })
             }

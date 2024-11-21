@@ -119,15 +119,7 @@ const DataTableColumns = ({ data, handleOpenDialog, handleDelete }) => {
     },
   ];
 
-  // const ActionButton = ({ row, handleOpenDialog, handleDelete }) => (
-  //   <>
-  //     <button onClick={() => handleOpenDialog("edit", row)}>Edit</button>
-  //     <button onClick={() => handleDelete(row)}>Delete</button>
-  //   </>
-  // );
-
   const dataWithAction = data.map((row, index) => {
-    // Use index or a combination of properties for a unique id
     const id = index + 1; // Example using index + 1
     return {
       ...row,

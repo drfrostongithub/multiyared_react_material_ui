@@ -1,12 +1,6 @@
 import { useState, useEffect } from "react";
 import Papa from "papaparse";
-import {
-  Table,
-  TableContainer,
-  // TablePagination,
-  Paper,
-  Button,
-} from "@mui/material";
+import { Table, TableContainer, Alert, Paper, Button } from "@mui/material";
 import DialogEditAccount from "../components/dialogEditAccount";
 import DataTableBody from "../components/dataTableBody";
 import SearchBar from "../components/searchBar";
@@ -59,15 +53,6 @@ const DataTable = () => {
     handleCloseDialog(); // Close the dialog after handling data
   };
 
-  // const handleChangePage = (event, newPage) => {
-  //   setPage(newPage);
-  // };
-
-  // const handleChangeRowsPerPage = (event) => {
-  //   setRowsPerPage(+event.target.value);
-  //   setPage(0);
-  // };
-
   const handleOpenDialog = (mode, row) => {
     setDialogMode(mode);
     setSelectedRow(row);
@@ -79,6 +64,11 @@ const DataTable = () => {
   };
 
   const handleDelete = (rowData) => {
+    if (data.length === 1) {
+      <Alert severity='error'>Cannot delete the last remaining item..</Alert>;
+      return;
+    }
+
     const newData = data.filter(
       (item) => item["Kode Acc"] !== rowData["Kode Acc"]
     );
@@ -135,15 +125,6 @@ const DataTable = () => {
         onSubmit={handleFormDataSubmit}
         data={data}
       />
-      {/* <TablePagination
-        rowsPerPageOptions={[10, 25, 100]}
-        component='div'
-        count={data.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      /> */}
     </Paper>
   );
 };
