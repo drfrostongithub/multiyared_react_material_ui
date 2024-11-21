@@ -35,6 +35,12 @@ const DialogEditCurrency = ({
     rate: "",
     std: false,
   });
+  const [errors, setErrors] = useState({
+    code: "",
+    name: "",
+    rate: "",
+    std: false,
+  });
 
   useEffect(() => {
     if (initiatlStatusCurrency === "edit" && initialCurrencyData) {
@@ -51,6 +57,25 @@ const DialogEditCurrency = ({
       rate: "",
       std: false,
     });
+  };
+
+  const handleSubmit = (initiatlStatusCurrency, formData) => {
+    const newErrors = Object.assign({}, errors); // Create a copy to avoid mutation
+    let hasErrors = false;
+    ["code", "name", "rate"].forEach((field) => {
+      if (!formData[field]) {
+        newErrors[field] = "This field is required.";
+        hasErrors = true;
+      } else {
+        newErrors[field] = "";
+      }
+    });
+
+    setErrors(newErrors);
+
+    if (!hasErrors) {
+      submitCurrencyEdit(initiatlStatusCurrency, formData);
+    }
   };
 
   return (
@@ -75,6 +100,8 @@ const DialogEditCurrency = ({
             variant='standard'
             value={formData.code}
             onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+            error={!!errors["code"]}
+            helperText={errors["code"]}
           />
           <TextField
             required
@@ -85,6 +112,8 @@ const DialogEditCurrency = ({
             variant='standard'
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            error={!!errors["name"]}
+            helperText={errors["name"]}
           />
           <TextField
             required
@@ -95,6 +124,8 @@ const DialogEditCurrency = ({
             variant='standard'
             value={formData.rate}
             onChange={(e) => setFormData({ ...formData, rate: e.target.value })}
+            error={!!errors["rate"]}
+            helperText={errors["rate"]}
           />
           <FormControlLabel
             control={
@@ -103,9 +134,13 @@ const DialogEditCurrency = ({
                 onChange={(e) =>
                   setFormData({ ...formData, std: e.target.checked })
                 }
+                error={!!errors["std"]}
+                helperText={errors["std"]}
               />
             }
             label='Standard Currency'
+            error={!!errors["std"]}
+            helperText={errors["std"]}
           />
           <div
             style={{
@@ -117,9 +152,7 @@ const DialogEditCurrency = ({
             <Button
               variant='contained'
               color='primary'
-              onClick={() =>
-                submitCurrencyEdit(initiatlStatusCurrency, formData)
-              }
+              onClick={() => handleSubmit(initiatlStatusCurrency, formData)}
             >
               Save
             </Button>

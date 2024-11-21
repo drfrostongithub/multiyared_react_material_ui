@@ -1,11 +1,6 @@
-import {
-  TableCell,
-  TableHead,
-  TableRow,
-  TableBody,
-  styled,
-} from "@mui/material";
-import { tableCellClasses } from "@mui/material/TableCell";
+import { Paper } from "@mui/material";
+// import { tableCellClasses } from "@mui/material/TableCell";
+import { DataGrid } from "@mui/x-data-grid";
 
 const formatValue = (value, map) => {
   return map[value] || value; // If value is not found in the map, return the original value
@@ -30,121 +25,91 @@ const controlAccMap = {
   5: "Fixed Asset",
 };
 
-const columns = [
-  { id: "KodeAcc", label: "Kode Acc", minWidth: 170 },
-  { id: "NamaAcc", label: "Nama Acc", minWidth: 170 },
-  {
-    id: "AccType",
-    label: "Acc Type",
-    minWidth: 170,
-    format: (value) => (value === 1 ? "G" : "D"),
-  },
-  {
-    id: "Level",
-    label: "Level",
-    minWidth: 170,
-  },
-  { id: "ParentAcc", label: "Parent Acc", minWidth: 170 },
-  {
-    id: "GroupName",
-    label: "Group Name",
-    minWidth: 170,
-    format: (value) => formatValue(value, groupNameMap),
-  },
-  {
-    id: "ControlAcc",
-    label: "Control Acc",
-    minWidth: 170,
-    format: (value) => formatValue(value, controlAccMap),
-  },
-  { id: "Ccy", label: "Ccy", minWidth: 170 },
-  {
-    id: "Dept",
-    label: "Dept",
-    minWidth: 170,
-    format: (value) => (value === 1 ? "Y" : ""),
-  },
-  {
-    id: "GainLoss",
-    label: "Gain loss",
-    minWidth: 170,
-    format: (value) => (value === 1 ? "Y" : ""),
-  },
-  { id: "Actions", label: "Actions", minWidth: 170 },
-];
+const paginationModel = { page: 0, pageSize: 5 };
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.common.black,
-    color: theme.palette.common.white,
-  },
-  [`&.${tableCellClasses.body}`]: {
-    fontSize: 14,
-  },
-}));
+const DataTableColumns = ({ data, handleOpenDialog, handleDelete }) => {
+  const columns = [
+    { field: "Kode Acc", headerName: "Kode Acc", minWidth: 170 },
+    { field: "Nama Acc", headerName: "Nama Acc", minWidth: 170 },
+    {
+      field: "Acc Type",
+      headerName: "Acc Type",
+      minWidth: 170,
+      valueGetter: (value) => (value === 1 ? "G" : "D"),
+    },
+    {
+      field: "Level",
+      headerName: "Level",
+      minWidth: 170,
+    },
+    { field: "Parent Acc", headerName: "Parent Acc", minWidth: 170 },
+    {
+      field: "Group Name",
+      headerName: "Group Name",
+      minWidth: 170,
+      valueGetter: (value) => formatValue(value, groupNameMap),
+    },
+    {
+      field: "Control Acc",
+      headerName: "Control Acc",
+      minWidth: 170,
+      valueGetter: (value) => formatValue(value, controlAccMap),
+    },
+    { field: "Ccy", headerName: "Ccy", minWidth: 170 },
+    {
+      field: "Dept",
+      headerName: "Dept",
+      minWidth: 170,
+      valueGetter: (value) => (value ? "Y" : ""),
+    },
+    {
+      field: "Gain loss",
+      headerName: "Gain loss",
+      minWidth: 170,
+      valueGetter: (value) => (value ? "Y" : ""),
+    },
+    {
+      field: "action",
+      headerName: "Actions",
+      minWidth: 170,
+      renderCell: (params) => (
+        <ActionButton
+          row={params.row}
+          handleOpenDialog={handleOpenDialog}
+          handleDelete={handleDelete}
+        />
+      ),
+    },
+  ];
 
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  "&:nth-of-type(odd)": {
-    backgroundColor: theme.palette.action.hover,
-  },
-  "&:last-child td, &:last-child th": {
-    border: 0,
-  },
-}));
+  const ActionButton = ({ row, handleOpenDialog, handleDelete }) => (
+    <>
+      <button onClick={() => handleOpenDialog("edit", row)}>Edit</button>
+      <button onClick={() => handleDelete(row)}>Delete</button>
+    </>
+  );
 
-const DataTableColumns = ({
-  data,
-  handleOpenDialog,
-  handleDelete,
-  rowsPerPage,
-  page,
-}) => {
+  const dataWithAction = data.map((row, index) => {
+    // Use index or a combination of properties for a unique id
+    const id = index + 1; // Example using index + 1
+    return {
+      ...row,
+      id,
+    };
+  });
+
   return (
     <>
-      <TableHead>
-        <TableRow>
-          {columns.map((column, i) => (
-            <StyledTableCell key={i} align={column.align}>
-              {column.label}
-            </StyledTableCell>
-          ))}
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {data
-          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-          .map((row) => {
-            return (
-              <StyledTableRow
-                key={row["Kode Acc"]}
-                hover
-                role='checkbox'
-                tabIndex={-1}
-              >
-                <StyledTableCell>{row["Kode Acc"]}</StyledTableCell>
-                <StyledTableCell>{row["Nama Acc"]}</StyledTableCell>
-                <StyledTableCell>{row["Acc Type"]}</StyledTableCell>
-                <StyledTableCell>{row["Level"]}</StyledTableCell>
-                <StyledTableCell>{row["Parent Acc"]}</StyledTableCell>
-                <StyledTableCell>
-                  {groupNameMap[row["Group Name"]]}
-                </StyledTableCell>
-                <StyledTableCell>
-                  {controlAccMap[row["Control Acc"]]}
-                </StyledTableCell>
-                <StyledTableCell>{row["Ccy"]}</StyledTableCell>
-                <StyledTableCell>{row["Dept"] ? "Y" : ""}</StyledTableCell>
-                <StyledTableCell>{row["Gain loss"] ? "Y" : ""}</StyledTableCell>
-                <StyledTableCell align='right'>
-                  <button onClick={() => handleOpenDialog("edit", row)}>
-                    Edit
-                  </button>
-                  <button onClick={() => handleDelete(row)}>Delete</button>
-                </StyledTableCell>
-              </StyledTableRow>
-            );
-          })}
-      </TableBody>
+      <Paper sx={{ height: 400, width: "100%" }}>
+        <DataGrid
+          rowHeight={38}
+          rows={dataWithAction}
+          columns={columns}
+          initialState={{ pagination: { paginationModel } }}
+          pageSizeOptions={[5, 15, 25]}
+          sx={{ border: 0 }}
+        />
+      </Paper>
     </>
   );
 };

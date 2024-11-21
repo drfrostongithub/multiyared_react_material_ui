@@ -1,4 +1,5 @@
 import DataTable from "./page/Table";
+// import TableExample from "./page/TableExample";
 
 function App() {
   return (
@@ -6,6 +7,7 @@ function App() {
       <div>
         <h1>Table With CRUD</h1>
         <DataTable />
+        {/* <TableExample /> */}
       </div>
     </>
   );

@@ -3,7 +3,7 @@ import Papa from "papaparse";
 import {
   Table,
   TableContainer,
-  TablePagination,
+  // TablePagination,
   Paper,
   Button,
 } from "@mui/material";
@@ -13,8 +13,8 @@ import SearchBar from "../components/searchBar";
 
 const DataTable = () => {
   const [data, setData] = useState([]);
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  // const [page, setPage] = React.useState(0);
+  // const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
   const [dialogOpen, setDialogOpen] = useState(false); // Manage dialog state
   const [dialogMode, setDialogMode] = useState(""); // Manage dialog mode ('edit' or 'create')
@@ -46,7 +46,9 @@ const DataTable = () => {
     if (dialogMode === "create") {
       setData([...data, formData]);
     } else if (dialogMode === "edit") {
-      const rowIndex = data.findIndex((item) => item === selectedRow);
+      const rowIndex = data.findIndex(
+        (item) => item["Kode Acc"] === selectedRow["Kode Acc"]
+      );
       if (rowIndex !== -1) {
         const updatedData = [...data];
         updatedData[rowIndex] = formData;
@@ -57,14 +59,14 @@ const DataTable = () => {
     handleCloseDialog(); // Close the dialog after handling data
   };
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
+  // const handleChangePage = (event, newPage) => {
+  //   setPage(newPage);
+  // };
 
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(+event.target.value);
-    setPage(0);
-  };
+  // const handleChangeRowsPerPage = (event) => {
+  //   setRowsPerPage(+event.target.value);
+  //   setPage(0);
+  // };
 
   const handleOpenDialog = (mode, row) => {
     setDialogMode(mode);
@@ -77,7 +79,9 @@ const DataTable = () => {
   };
 
   const handleDelete = (rowData) => {
-    const newData = data.filter((item) => item !== rowData);
+    const newData = data.filter(
+      (item) => item["Kode Acc"] !== rowData["Kode Acc"]
+    );
     setData(newData);
   };
 
@@ -120,8 +124,6 @@ const DataTable = () => {
             data={filteredData}
             handleOpenDialog={handleOpenDialog}
             handleDelete={handleDelete}
-            rowsPerPage={rowsPerPage}
-            page={page}
           />
         </Table>
       </TableContainer>
@@ -131,8 +133,9 @@ const DataTable = () => {
         rowData={selectedRow}
         onClose={handleCloseDialog}
         onSubmit={handleFormDataSubmit}
+        data={data}
       />
-      <TablePagination
+      {/* <TablePagination
         rowsPerPageOptions={[10, 25, 100]}
         component='div'
         count={data.length}
@@ -140,7 +143,7 @@ const DataTable = () => {
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
-      />
+      /> */}
     </Paper>
   );
 };

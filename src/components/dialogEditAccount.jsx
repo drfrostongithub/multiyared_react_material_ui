@@ -21,6 +21,7 @@ import Draggable from "react-draggable";
 import EditIcon from "@mui/icons-material/Edit";
 // import DialogEditCurrency from "./dialogEditCurrency";
 import CurrencyTable from "../page/CurrencyTable";
+import { validateAccountForm } from "./validation";
 
 function PaperComponent(props) {
   return (
@@ -39,6 +40,7 @@ const DialogEditAccount = ({
   rowData: initialRowData,
   onClose,
   onSubmit,
+  data,
 }) => {
   const [dialogMode, setDialogMode] = useState(initialMode);
   const [dialogOpenTableCurrency, setOpenTableCurrency] = useState(false);
@@ -81,19 +83,8 @@ const DialogEditAccount = ({
   }, [initialMode, initialRowData]);
 
   const handleSubmit = () => {
-    const newErrors = Object.assign({}, errors); // Create a copy to avoid mutation
-    let hasErrors = false;
-
-    ["Kode Acc", "Nama Acc", "Acc Type"].forEach((field) => {
-      if (!formData[field]) {
-        newErrors[field] = "This field is required.";
-        hasErrors = true;
-      } else {
-        newErrors[field] = "";
-      }
-    });
-
-    setErrors(newErrors);
+    const { errors, hasErrors } = validateAccountForm(formData, data);
+    setErrors(errors);
 
     if (!hasErrors) {
       onSubmit(formData);
@@ -118,15 +109,12 @@ const DialogEditAccount = ({
 
   const submitCurrencyEdit = (statusEditCurrency, currencyData) => {
     if (statusEditCurrency === "create") {
-      // Add new data to the state
       setCurrency([...currencies, currencyData]);
     } else if (statusEditCurrency === "edit") {
-      // Find the index of the edited row
       const rowIndex = currencies.findIndex(
         (item) => item === selectedRowCurrencies
       );
       if (rowIndex !== -1) {
-        // Update the data at the specific index with the new currencyData
         const updatedData = [...currencies];
         updatedData[rowIndex] = currencyData;
         setCurrency(updatedData);
@@ -179,7 +167,6 @@ const DialogEditAccount = ({
           {initialMode === "create" ? "Create Account" : "Edit Account"}
         </DialogTitle>
         <DialogContent>
-          {/* <FormControl> */}
           <TextField
             autoFocus
             required
@@ -365,7 +352,6 @@ const DialogEditAccount = ({
               Edit Currency
             </Button>
           </div>
-          {/* </FormControl> */}
         </DialogContent>
         <DialogActions style={{ justifyContent: "flex-start" }}>
           <Button onClick={handleSubmit}>
