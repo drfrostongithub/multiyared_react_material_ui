@@ -1,6 +1,5 @@
 import DataTable from "./page/Table";
-// import TableExample from "./page/TableExample";
-
+import Nesting from "./page/Nesting";
 function App() {
   return (
     <>
@@ -8,6 +7,7 @@ function App() {
         <h1>Table With CRUD</h1>
         <DataTable />
         {/* <TableExample /> */}
+        <Nesting />
       </div>
     </>
   );
